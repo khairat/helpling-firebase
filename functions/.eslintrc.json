@@ -8,9 +8,9 @@
   "parser": "@typescript-eslint/parser",
   "plugins": [
     "@typescript-eslint",
-    "sort-keys-fix",
     "simple-import-sort",
     "sort-destructure-keys",
+    "sort-keys-fix",
     "prettier"
   ],
   "rules": {
