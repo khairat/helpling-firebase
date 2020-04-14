@@ -2,22 +2,9 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    function getThread(id) {
-      return get(/databases/$(database)/documents/threads/$(id)).data;
-    }
-
     match /users/{userId} {
       allow create, read: if request.auth.uid != null;
       allow update: if request.auth.uid == resource.data.id;
-    }
-
-		match /threads/{threadId} {
-      allow read: if request.auth.uid in resource.data.userIds;
-    }
-
-		match /messages/{messageId} {
-      allow create: if request.auth.uid in getThread(request.resource.data.threadId).userIds;
-      allow read: if request.auth.uid in getThread(resource.data.threadId).userIds;
     }
 
 		match /requests/{requestId} {
