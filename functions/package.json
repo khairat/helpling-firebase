@@ -1,6 +1,12 @@
 {
   "name": "helpling-functions",
+  "license": "MIT",
   "private": true,
+  "author": {
+    "name": "Ali Zahid",
+    "email": "ali.zahid@live.com",
+    "url": "https://alizahid.dev"
+  },
   "main": "lib/index.js",
   "engines": {
     "node": "10"
