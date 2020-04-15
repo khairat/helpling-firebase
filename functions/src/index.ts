@@ -66,7 +66,9 @@ export const accept = functions.https.onCall(async ({ id, kind }, { auth }) => {
     updatedAt: new Date()
   })
 
-  return thread.id
+  return {
+    threadId: thread.id
+  }
 })
 
 export const complete = functions.https.onCall(
