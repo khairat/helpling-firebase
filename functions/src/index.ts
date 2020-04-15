@@ -25,9 +25,7 @@ export const accept = functions.https.onCall(async ({ id, kind }, { auth }) => {
     )
   }
 
-  const collection = kind === 'offer' ? 'offers' : 'requests'
-
-  const item = await admin.firestore().collection(collection).doc(id).get()
+  const item = await admin.firestore().collection(`${kind}s`).doc(id).get()
 
   const data = item.data()
 
@@ -40,18 +38,15 @@ export const accept = functions.https.onCall(async ({ id, kind }, { auth }) => {
 
   const { status, userId } = data
 
-  if (status !== 'pending') {
-    throw new functions.https.HttpsError(
-      'already-exists',
-      `${kind === 'offer' ? 'Offer' : 'Request'} already accepted.`
-    )
-  }
-
   if (auth.uid === userId) {
     throw new functions.https.HttpsError(
       'permission-denied',
       `You cannot accept your own ${kind}.`
     )
+  }
+
+  if (['pending', 'accepted'].includes(status)) {
+    throw new functions.https.HttpsError('invalid-argument', 'Invalid status')
   }
 
   const thread = await admin
@@ -64,13 +59,52 @@ export const accept = functions.https.onCall(async ({ id, kind }, { auth }) => {
       userIds: [userId, auth.uid]
     })
 
-  await admin.firestore().collection(collection).doc(id).update({
+  await admin.firestore().collection(`${kind}s`).doc(id).update({
     helplingId: auth.uid,
     status: 'accepted',
     threadId: thread.id,
     updatedAt: new Date()
   })
 })
+
+export const complete = functions.https.onCall(
+  async ({ id, kind }, { auth }) => {
+    if (!auth) {
+      throw new functions.https.HttpsError(
+        'unauthenticated',
+        'Need to be authenticated.'
+      )
+    }
+
+    const item = await admin.firestore().collection(`${kind}s`).doc(id).get()
+
+    const data = item.data()
+
+    if (!data) {
+      throw new functions.https.HttpsError(
+        'not-found',
+        `${kind === 'offer' ? 'Offer' : 'Request'} not found.`
+      )
+    }
+
+    const { status, userId } = data
+
+    if (auth.uid === userId) {
+      throw new functions.https.HttpsError(
+        'permission-denied',
+        `You cannot accept your own ${kind}.`
+      )
+    }
+
+    if (['pending', 'completed'].includes(status)) {
+      throw new functions.https.HttpsError('invalid-argument', 'Invalid status')
+    }
+
+    await admin.firestore().collection(`${kind}s`).doc(id).update({
+      status: 'completed'
+    })
+  }
+)
 
 export const removeCommentsOnOfferRemove = functions.firestore
   .document('offers/{id}')
