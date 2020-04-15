@@ -55,6 +55,7 @@ export const accept = functions.https.onCall(async ({ id, kind }, { auth }) => {
     .add({
       createdAt: new Date(),
       itemId: item.id,
+      itemType: kind,
       updatedAt: new Date(),
       userIds: [userId, auth.uid]
     })
