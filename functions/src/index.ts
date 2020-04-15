@@ -45,7 +45,7 @@ export const accept = functions.https.onCall(async ({ id, kind }, { auth }) => {
     )
   }
 
-  if (['pending', 'accepted'].includes(status)) {
+  if (['accepted', 'completed'].includes(status)) {
     throw new functions.https.HttpsError('invalid-argument', 'Invalid status')
   }
 
@@ -87,12 +87,19 @@ export const complete = functions.https.onCall(
       )
     }
 
-    const { status, userId } = data
+    const { helplingId, status, userId } = data
 
     if (auth.uid === userId) {
       throw new functions.https.HttpsError(
         'permission-denied',
-        `You cannot accept your own ${kind}.`
+        `You cannot complete your own ${kind}.`
+      )
+    }
+
+    if (auth.uid !== helplingId) {
+      throw new functions.https.HttpsError(
+        'permission-denied',
+        `You cannot complete someone else's ${kind}.`
       )
     }
 
