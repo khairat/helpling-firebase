@@ -132,9 +132,10 @@ export const updateThreadOnMessageCreate = functions.firestore
     const data = doc.data()
 
     if (data) {
-      const { threadId } = data
+      const { body, threadId } = data
 
       await admin.firestore().collection('threads').doc(threadId).update({
+        last: body,
         updatedAt: new Date()
       })
     }
