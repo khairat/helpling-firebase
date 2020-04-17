@@ -40,7 +40,7 @@ export const accept = functions.https.onCall(async ({ id, kind }, { auth }) => {
     .collection('threads')
     .add({
       createdAt: new Date(),
-      itemId: item.id,
+      itemId: id,
       itemType: kind,
       updatedAt: new Date(),
       userIds: [item.userId, auth.uid]
@@ -64,7 +64,7 @@ export const accept = functions.https.onCall(async ({ id, kind }, { auth }) => {
   if (user) {
     await admin.messaging().sendToTopic(`user_${item.userId}`, {
       data: {
-        deeplink: `helpling://${collection}/${item.id}`
+        deeplink: `helpling://${collection}/${id}`
       },
       notification: {
         body: `${user.name} accepted your ${kind}.`,
@@ -133,7 +133,7 @@ export const complete = functions.https.onCall(
     if (user) {
       await admin.messaging().sendToTopic(`user_${item.userId}`, {
         data: {
-          deeplink: `helpling://${collection}/${item.id}`
+          deeplink: `helpling://${collection}/${id}`
         },
         notification: {
           body: `${user.name} completed your ${kind}.`,
