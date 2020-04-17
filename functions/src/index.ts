@@ -31,7 +31,7 @@ export const accept = functions.https.onCall(async ({ id, kind }, { auth }) => {
     )
   }
 
-  if (['accepted', 'completed'].includes(status)) {
+  if (['accepted', 'completed'].includes(item.status)) {
     throw new functions.https.HttpsError('invalid-argument', 'Invalid status')
   }
 
@@ -114,7 +114,7 @@ export const complete = functions.https.onCall(
       )
     }
 
-    if (['pending', 'completed'].includes(status)) {
+    if (['pending', 'completed'].includes(item.status)) {
       throw new functions.https.HttpsError('invalid-argument', 'Invalid status')
     }
 
