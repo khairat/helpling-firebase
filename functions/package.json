@@ -14,7 +14,7 @@
   "scripts": {
     "lint": "eslint . --ext ts",
     "build": "tsc",
-    "serve": "npm run build && firebase emulators:start --only functions",
+    "serve": "npm run build && env-cmd firebase emulators:start --only functions",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
@@ -22,11 +22,16 @@
   },
   "dependencies": {
     "firebase-admin": "^8.10.0",
-    "firebase-functions": "^3.6.0"
+    "firebase-functions": "^3.6.0",
+    "lodash.keyby": "^4.6.0",
+    "lodash.uniq": "^4.5.0"
   },
   "devDependencies": {
+    "@types/lodash.keyby": "^4.6.6",
+    "@types/lodash.uniq": "^4.5.6",
     "@typescript-eslint/eslint-plugin": "^2.28.0",
     "@typescript-eslint/parser": "^2.28.0",
+    "env-cmd": "^10.1.0",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.1",
     "eslint-plugin-prettier": "^3.1.3",

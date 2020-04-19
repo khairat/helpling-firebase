@@ -1,7 +1,99 @@
 import * as admin from 'firebase-admin'
 import * as functions from 'firebase-functions'
+import uniq = require('lodash.uniq')
+import keyBy = require('lodash.keyby')
 
 admin.initializeApp(functions.config().firebase)
+
+export const fetchRequest = functions.https.onRequest(
+  async (request, reply) => {
+    const {
+      query: { id, kind }
+    } = request
+
+    if (!id || !kind) {
+      reply.status(401).json({
+        error: 'Missing parameters'
+      })
+
+      return
+    }
+
+    const collection = kind === 'offer' ? 'offers' : 'requests'
+
+    const itemRef = await admin
+      .firestore()
+      .collection(collection)
+      .doc(id as string)
+      .get()
+
+    const item = itemRef.data()
+
+    if (!item) {
+      reply.status(404).json({
+        error: `${kind === 'offer' ? 'Offer' : 'Request'} not found.`
+      })
+
+      return
+    }
+
+    const commentsRef = await admin
+      .firestore()
+      .collection('comments')
+      .where('itemId', '==', id)
+      .get()
+
+    const comments = commentsRef.docs.map((doc) => doc.data())
+
+    const usersRef = await admin
+      .firestore()
+      .collection('users')
+      .where(
+        'id',
+        'in',
+        uniq(
+          [
+            ...comments.map(({ userId }) => userId),
+            item.userId,
+            item.helplingId
+          ].filter(Boolean)
+        )
+      )
+      .get()
+
+    const users = keyBy(
+      usersRef.docs.map((doc) => {
+        const { id, name } = doc.data()
+
+        return {
+          id,
+          name
+        }
+      }),
+      'id'
+    )
+
+    item.createdAt = item.createdAt.toDate().toISOString()
+    item.updatedAt = item.updatedAt.toDate().toISOString()
+    item.user = users[item.userId]
+
+    delete item.userId
+
+    comments.forEach((comment) => {
+      comment.createdAt = comment.createdAt.toDate().toISOString()
+      comment.user = users[comment.userId]
+
+      delete comment.itemId
+      delete comment.itemType
+      delete comment.userId
+    })
+
+    reply.json({
+      comments,
+      [kind as string]: item
+    })
+  }
+)
 
 export const accept = functions.https.onCall(async ({ id, kind }, { auth }) => {
   if (!auth) {
@@ -13,7 +105,7 @@ export const accept = functions.https.onCall(async ({ id, kind }, { auth }) => {
 
   const collection = kind === 'offer' ? 'offers' : 'requests'
 
-  const itemRef = await admin.firestore().collection(`${kind}s`).doc(id).get()
+  const itemRef = await admin.firestore().collection(collection).doc(id).get()
 
   const item = itemRef.data()
 
