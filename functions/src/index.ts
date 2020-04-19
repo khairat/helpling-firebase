@@ -271,6 +271,10 @@ export const onCommentCreate = functions.firestore
       return
     }
 
+    if (item.userId === comment.userId) {
+      return
+    }
+
     await admin.messaging().sendToTopic(`user_${item.userId}`, {
       data: {
         deeplink: `helpling://${collection}/${comment.itemId}`
