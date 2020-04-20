@@ -1,12 +1,13 @@
+import cors from 'cors'
 import * as admin from 'firebase-admin'
 import * as functions from 'firebase-functions'
-import uniq = require('lodash.uniq')
-import keyBy = require('lodash.keyby')
+import keyBy from 'lodash.keyby'
+import uniq from 'lodash.uniq'
 
 admin.initializeApp(functions.config().firebase)
 
-export const fetchRequest = functions.https.onRequest(
-  async (request, reply) => {
+export const fetchRequest = functions.https.onRequest((request, reply) =>
+  cors()(request, reply, async () => {
     const {
       query: { id, kind }
     } = request
@@ -92,7 +93,7 @@ export const fetchRequest = functions.https.onRequest(
       comments,
       [kind as string]: item
     })
-  }
+  })
 )
 
 export const accept = functions.https.onCall(async ({ id, kind }, { auth }) => {
