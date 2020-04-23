@@ -314,15 +314,21 @@ export const onMessageCreate = functions.firestore
       return
     }
 
-    await admin.messaging().sendToTopic(`user_${recipient}`, {
-      data: {
-        deeplink: `helpling://messages/${message.threadId}`
+    await admin.messaging().sendToTopic(
+      `user_${recipient}`,
+      {
+        data: {
+          deeplink: `helpling://messages/${message.threadId}`
+        },
+        notification: {
+          body: message.body,
+          title: `${user.name} sent you a message`
+        }
       },
-      notification: {
-        body: message.body,
-        title: `${user.name} sent you a message`
+      {
+        collapseKey: thread.id
       }
-    })
+    )
   })
 
 export const onCommentCreate = functions.firestore
@@ -368,13 +374,19 @@ export const onCommentCreate = functions.firestore
       return
     }
 
-    await admin.messaging().sendToTopic(`user_${item.userId}`, {
-      data: {
-        deeplink: `helpling://${collection}/${comment.itemId}`
+    await admin.messaging().sendToTopic(
+      `user_${item.userId}`,
+      {
+        data: {
+          deeplink: `helpling://${collection}/${comment.itemId}`
+        },
+        notification: {
+          body: comment.body,
+          title: `${sender.name} commented on your ${comment.itemType}.`
+        }
       },
-      notification: {
-        body: comment.body,
-        title: `${sender.name} commented on your ${comment.itemType}.`
+      {
+        collapseKey: item.id
       }
-    })
+    )
   })
