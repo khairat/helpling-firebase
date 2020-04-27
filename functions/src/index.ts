@@ -160,7 +160,10 @@ export const accept = functions.https.onCall(async ({ id, kind }, { auth }) => {
         deeplink: `helpling://${collection}/${id}`
       },
       notification: {
-        body: `${user.name} accepted your ${kind}.`,
+        body:
+          kind === 'offer'
+            ? `${user.name} accepted your offer to help.`
+            : `${user.name} has accepted your request for help.`,
         title: `${kind === 'offer' ? 'Offer' : 'Request'} accepted`
       }
     })
@@ -229,7 +232,7 @@ export const complete = functions.https.onCall(
           deeplink: `helpling://${collection}/${id}`
         },
         notification: {
-          body: `${user.name} completed your ${kind}.`,
+          body: `${user.name} completed your ${kind}. Bravo!`,
           title: `${kind === 'offer' ? 'Offer' : 'Request'} completed`
         }
       })
