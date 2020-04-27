@@ -6,8 +6,10 @@ import uniq from 'lodash.uniq'
 
 admin.initializeApp(functions.config().firebase)
 
+const region = 'europe-west2'
+
 export const fetchRequest = functions
-  .region('us-central1', 'europe-west2')
+  .region(region)
   .https.onRequest((request, reply) =>
     cors()(request, reply, async () => {
       const {
@@ -99,7 +101,7 @@ export const fetchRequest = functions
   )
 
 export const accept = functions
-  .region('us-central1', 'europe-west2')
+  .region(region)
   .https.onCall(async ({ id, kind }, { auth }) => {
     if (!auth) {
       throw new functions.https.HttpsError(
@@ -179,7 +181,7 @@ export const accept = functions
   })
 
 export const complete = functions
-  .region('us-central1', 'europe-west2')
+  .region(region)
   .https.onCall(async ({ id, kind }, { auth }) => {
     if (!auth) {
       throw new functions.https.HttpsError(
@@ -267,16 +269,19 @@ const cleanUpAfterItem = async (itemId: string): Promise<void> => {
   await batch.commit()
 }
 
-export const cleanUpOnOfferRemove = functions.firestore
-  .document('offers/{id}')
+export const cleanUpOnOfferRemove = functions
+  .region(region)
+  .firestore.document('offers/{id}')
   .onDelete((doc) => cleanUpAfterItem(doc.id))
 
-export const cleanUpOnRequestRemove = functions.firestore
-  .document('requests/{id}')
+export const cleanUpOnRequestRemove = functions
+  .region(region)
+  .firestore.document('requests/{id}')
   .onDelete((doc) => cleanUpAfterItem(doc.id))
 
-export const onMessageCreate = functions.firestore
-  .document('messages/{id}')
+export const onMessageCreate = functions
+  .region(region)
+  .firestore.document('messages/{id}')
   .onCreate(async (doc) => {
     const message = doc.data()
 
@@ -338,8 +343,9 @@ export const onMessageCreate = functions.firestore
     )
   })
 
-export const onCommentCreate = functions.firestore
-  .document('comments/{id}')
+export const onCommentCreate = functions
+  .region(region)
+  .firestore.document('comments/{id}')
   .onCreate(async (doc) => {
     const comment = doc.data()
 
