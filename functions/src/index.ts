@@ -329,7 +329,7 @@ export const onMessageCreate = functions.firestore
         }
       },
       {
-        collapseKey: thread.id
+        collapseKey: threadRef.id
       }
     )
   })
@@ -389,7 +389,7 @@ export const onCommentCreate = functions.firestore
         }
       },
       {
-        collapseKey: item.id
+        collapseKey: itemRef.id
       }
     )
   })
