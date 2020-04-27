@@ -100,7 +100,7 @@ export const fetchRequest = functions
     })
   )
 
-export const accept = functions
+export const acceptRequest = functions
   .region(region)
   .https.onCall(async ({ id, kind }, { auth }) => {
     if (!auth) {
@@ -130,7 +130,7 @@ export const accept = functions
       )
     }
 
-    if (['accepted', 'completed'].includes(item.status)) {
+    if (item.status !== 'pending') {
       throw new functions.https.HttpsError('invalid-argument', 'Invalid status')
     }
 
@@ -180,7 +180,7 @@ export const accept = functions
     }
   })
 
-export const complete = functions
+export const completeRequest = functions
   .region(region)
   .https.onCall(async ({ id, kind }, { auth }) => {
     if (!auth) {
@@ -203,21 +203,28 @@ export const complete = functions
       )
     }
 
-    if (auth.uid === item.userId) {
-      throw new functions.https.HttpsError(
-        'permission-denied',
-        `You cannot complete your own ${kind}.`
-      )
-    }
-
-    if (auth.uid !== item.helplingId) {
+    if (![item.userId, item.helplingId].filter(Boolean).includes(auth.uid)) {
       throw new functions.https.HttpsError(
         'permission-denied',
         `You cannot complete someone else's ${kind}.`
       )
     }
 
-    if (['pending', 'completed'].includes(item.status)) {
+    if (kind === 'offer' && auth.uid !== item.helplingId) {
+      throw new functions.https.HttpsError(
+        'permission-denied',
+        'You cannot complete your own offer.'
+      )
+    }
+
+    if (kind === 'request' && auth.uid !== item.userId) {
+      throw new functions.https.HttpsError(
+        'permission-denied',
+        `You cannot complete your own request.`
+      )
+    }
+
+    if (item.status !== 'accepted') {
       throw new functions.https.HttpsError('invalid-argument', 'Invalid status')
     }
 
@@ -244,6 +251,8 @@ export const complete = functions
         }
       })
     }
+
+    return {}
   })
 
 const cleanUpAfterItem = async (itemId: string): Promise<void> => {
